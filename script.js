@@ -1,32 +1,53 @@
-const todoInput = document.getElementById("todo-input");
-const addButton = document.getElementById("add-button");
-const todoList = document.getElementById("todo-list");
+document.addEventListener('DOMContentLoaded', function() {
+  const todoForm = document.getElementById('todo-form');
+  const todoInput = document.getElementById('todo-input');
+  const todoList = document.getElementById('todo-list');
 
-addButton.addEventListener("click", function() {
-  const todoText = todoInput.value;
-  if (todoText) {
-    // Create a new list item
-    const listItem = document.createElement("li");
+  // Load todos from local storage
+  let todos = JSON.parse(localStorage.getItem('todos')) || [];
 
-    // Create a span element for the todo text
-    const todoSpan = document.createElement("span");
-    todoSpan.textContent = todoText;
-
-    // Create a button element to remove the todo
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "Hapus";
-    removeButton.addEventListener("click", function() {
-      todoList.removeChild(listItem);
-    });
-
-    // Add the span and button to the list item
-    listItem.appendChild(todoSpan);
-    listItem.appendChild(removeButton);
-
-    // Add the list item to the todo list
-    todoList.appendChild(listItem);
-
-    // Clear the input field
-    todoInput.value = "";
+  // Render todos
+  function renderTodos() {
+      todoList.innerHTML = '';
+      todos.forEach(function(todo, index) {
+          const li = document.createElement('li');
+          li.innerHTML = `
+              <span>${todo}</span>
+              <div class="actions">
+                  <button onclick="editTodo(${index})">Edit</button>
+                  <button onclick="deleteTodo(${index})">Delete</button>
+              </div>
+          `;
+          todoList.appendChild(li);
+      });
+      localStorage.setItem('todos', JSON.stringify(todos));
   }
+
+  renderTodos();
+
+  // Add todo
+  todoForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const todoText = todoInput.value.trim();
+      if (todoText !== '') {
+          todos.push(todoText);
+          renderTodos();
+          todoInput.value = '';
+      }
+  });
+
+  // Delete todo
+  window.deleteTodo = function(index) {
+      todos.splice(index, 1);
+      renderTodos();
+  };
+
+  // Edit todo
+  window.editTodo = function(index) {
+      const newText = prompt('Edit Todo:', todos[index]);
+      if (newText !== null) {
+          todos[index] = newText.trim();
+          renderTodos();
+      }
+  };
 });
